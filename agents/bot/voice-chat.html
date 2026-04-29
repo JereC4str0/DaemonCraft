@@ -170,14 +170,16 @@
 
   <div class="settings">
     <label>Bot API URL</label>
-    <input id="apiUrl" value="http://localhost:3001" />
+    <input id="apiUrl" value="http://localhost:3002" />
     <label>WS URL</label>
-    <input id="wsUrl" value="ws://localhost:3001/ws" />
+    <input id="wsUrl" value="ws://localhost:3002/ws" />
   </div>
 
   <script>
-    const API_URL = document.getElementById('apiUrl').value;
-    const WS_URL = document.getElementById('wsUrl').value;
+    const apiUrlEl = document.getElementById('apiUrl');
+    const wsUrlEl = document.getElementById('wsUrl');
+    const API_URL = () => apiUrlEl.value.trim();
+    const WS_URL = () => wsUrlEl.value.trim();
     const chatEl = document.getElementById('chat');
     const micBtn = document.getElementById('micBtn');
     const statusDot = document.getElementById('statusDot');
@@ -189,8 +191,17 @@
     let reconnectTimer = null;
 
     function connectWs() {
-      if (ws && ws.readyState <= 1) return;
-      ws = new WebSocket(WS_URL);
+      if (ws && ws.readyState <= 1) {
+        try { ws.close(); } catch (e) {}
+      }
+      clearTimeout(reconnectTimer);
+      const url = WS_URL();
+      try {
+        ws = new WebSocket(url);
+      } catch (e) {
+        setStatus('disconnected', 'URL inválida');
+        return;
+      }
 
       ws.onopen = () => {
         setStatus('connected', 'Conectado');
@@ -201,8 +212,11 @@
         try {
           const { type, data } = JSON.parse(ev.data);
           if (type === 'chat' && Array.isArray(data)) {
+            // Server sends full history slice — clear and re-render to avoid duplicates
+            chatEl.innerHTML = '';
             data.forEach(msg => addMsg(msg.from, msg.message, msg.self ? 'me' : 'agent'));
           } else if (type === 'chat' && data && data.messages) {
+            chatEl.innerHTML = '';
             data.messages.forEach(msg => addMsg(msg.from, msg.message, msg.self ? 'me' : 'agent'));
           }
         } catch (e) {}
@@ -217,6 +231,10 @@
         setStatus('disconnected', 'Error de conexión');
       };
     }
+
+    // Reconnect when URLs change
+    apiUrlEl.addEventListener('change', connectWs);
+    wsUrlEl.addEventListener('change', connectWs);
 
     function setStatus(state, text) {
       statusDot.className = 'status-dot ' + state;
@@ -310,7 +328,7 @@
     async function sendChat(text) {
       addMsg('Vos', text, 'me');
       try {
-        const resp = await fetch(API_URL + '/chat/send', {
+        const resp = await fetch(API_URL() + '/chat/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: text }),
