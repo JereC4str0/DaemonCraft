@@ -40,6 +40,7 @@ Environment:
 
 import json
 import os
+import re
 import threading
 import urllib.request
 import urllib.error
@@ -1040,6 +1041,20 @@ def _handle_mc_command(args: dict, **kwargs) -> str:
         return "Error: command is required"
     if not command.startswith("/"):
         command = "/" + command
+
+    # ═─ Intercept /godmode toggle ─══════════════════════════════════════
+    stripped = command.strip().lower()
+    if stripped == "/godmode on" or stripped == "/godmode":
+        _gm_path = Path.home() / ".local" / "share" / "daemoncraft" / "rolemaster" / "godmode"
+        _gm_path.parent.mkdir(parents=True, exist_ok=True)
+        _gm_path.write_text("on")
+        return "Godmode ENABLED. The Daemon Guardian will keep you in creative mode with invulnerability effects."
+    if stripped == "/godmode off":
+        _gm_path = Path.home() / ".local" / "share" / "daemoncraft" / "rolemaster" / "godmode"
+        _gm_path.parent.mkdir(parents=True, exist_ok=True)
+        _gm_path.write_text("off")
+        return "Godmode DISABLED. The Daemon Guardian is paused. You can now take damage, drown, or switch gamemodes. Say '/godmode on' to restore protection."
+
     return _fmt(_api_post("/chat/send", {"message": command}))
 
 
@@ -1068,6 +1083,8 @@ from pathlib import Path
 
 _STORY_PATH = Path(os.getenv("DAEMONCRAFT_STORY_PATH", Path.home() / ".local" / "share" / "daemoncraft" / "story.json"))
 _BLUEPRINT_PATH = Path(os.getenv("DAEMONCRAFT_BLUEPRINT_PATH", Path.home() / ".local" / "share" / "daemoncraft" / "blueprint.json"))
+# Shared blueprints directory used by the dashboard and mc_story
+_BLUEPRINTS_DIR = Path(__file__).parent.parent / "blueprints"
 
 
 def _load_story() -> dict:
@@ -1088,6 +1105,8 @@ def _load_story() -> dict:
         "events": [],
         "player_choices": {},
         "active_sensors": [],
+        "active_blueprint": None,
+        "active_blueprint_tag": None,
     }
 
 
@@ -1107,6 +1126,8 @@ def _handle_mc_story(args: dict, **kwargs) -> str:
             f"Story: {story.get('title') or 'Untitled'}",
             f"Phase: {story.get('phase') or 'none'}",
             f"Day: {story.get('day', 1)}",
+            f"Active blueprint: {story.get('active_blueprint', 'none')}",
+            f"Active blueprint tag: {story.get('active_blueprint_tag', 'none')}",
             f"Flags: {json.dumps(story.get('flags', {}))}",
             f"Objectives ({len(story.get('objectives', []))}):",
         ]
@@ -1274,23 +1295,39 @@ def _handle_mc_story(args: dict, **kwargs) -> str:
 
     if action == "save_blueprint":
         blueprint = args.get("blueprint")
+        name = args.get("name")
         if not blueprint:
             return "Error: blueprint JSON is required for save_blueprint"
         if not isinstance(blueprint, dict):
             return "Error: blueprint must be a JSON object"
-        _BLUEPRINT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        _BLUEPRINT_PATH.write_text(json.dumps(blueprint, indent=2))
+        if name:
+            target = _BLUEPRINTS_DIR / f"{name}.json"
+            _BLUEPRINTS_DIR.mkdir(parents=True, exist_ok=True)
+        else:
+            target = _BLUEPRINT_PATH
+            target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(blueprint, indent=2))
         return f"Blueprint saved: {blueprint.get('metadata', {}).get('title', 'Untitled')}"
 
     if action == "load_blueprint":
-        if not _BLUEPRINT_PATH.exists():
-            return "No blueprint saved yet"
+        name = args.get("name")
+        if name:
+            target = _BLUEPRINTS_DIR / f"{name}.json"
+        else:
+            target = _BLUEPRINT_PATH
+        if not target.exists():
+            return f"No blueprint found: {target.name}"
         try:
-            bp = json.loads(_BLUEPRINT_PATH.read_text())
+            bp = json.loads(target.read_text())
             title = bp.get("metadata", {}).get("title", "Untitled")
             phases = len(bp.get("phases", []))
             entities = len(bp.get("entities", []))
-            return f"Blueprint: {title}\nPhases: {phases}\nEntities: {entities}\nFlags: {json.dumps(bp.get('flags', {}))}"
+            # Store blueprint tag in story state for cleanup reference
+            tag = re.sub(r'[^a-z0-9_]', '_', title.lower())
+            story["active_blueprint"] = str(target.name)
+            story["active_blueprint_tag"] = f"dc_blueprint_{tag}"
+            _save_story(story)
+            return f"Blueprint: {title}\nTag: dc_blueprint_{tag}\nPhases: {phases}\nEntities: {entities}\nFlags: {json.dumps(bp.get('flags', {}))}"
         except Exception as e:
             return f"Error loading blueprint: {e}"
 
@@ -1440,6 +1477,80 @@ MC_STORY_SCHEMA = {
 }
 
 
+MC_REGISTRY_SCHEMA = {
+    "name": "mc_registry",
+    "description": "Query the shared Minecraft validation registry for canonical lists of biomes, entities, items, blocks, effects, and scoreboard criteria. Use this when you need to know valid values for adventure blueprints (e.g., 'what flying passive mobs exist?', 'what biomes are in the overworld?', 'is crow a valid entity?'). Results are sourced from minecraft-data for the configured server version.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "category": {
+                "type": "string",
+                "enum": ["biomes", "entities", "items", "blocks", "effects", "scoreboard_criteria"],
+                "description": "Registry category to query",
+            },
+            "filter": {"type": "string", "description": "Optional substring filter on name or displayName (case-insensitive)"},
+            "limit": {"type": "number", "description": "Max results to return (default 20, max 100)"},
+            "type_filter": {"type": "string", "description": "For entities: filter by type (e.g. mob, animal, hostile, passive, ambient)"},
+            "dimension": {"type": "string", "description": "For biomes: filter by dimension (overworld, nether, end)"},
+        },
+        "required": ["category"],
+    },
+}
+
+def _handle_mc_registry(args: dict, **kwargs) -> str:
+    category = args.get("category")
+    filt = (args.get("filter") or "").lower()
+    limit = min(int(args.get("limit") or 20), 100)
+    type_filter = (args.get("type_filter") or "").lower()
+    dimension = (args.get("dimension") or "").lower()
+
+    registry_path = Path(__file__).parent.parent / "data" / "minecraft-registry.json"
+    if not registry_path.exists():
+        return "Error: minecraft-registry.json not found. Run scripts/generate-minecraft-registry.js to create it."
+
+    try:
+        registry = json.loads(registry_path.read_text())
+    except Exception as e:
+        return f"Error reading registry: {e}"
+
+    items = registry.get(category)
+    if items is None:
+        return f"Error: unknown category '{category}'. Valid: biomes, entities, items, blocks, effects, scoreboard_criteria"
+
+    results = []
+    for item in items:
+        name = item.get("name", "")
+        display = item.get("displayName", "")
+        if filt and filt not in name.lower() and filt not in display.lower():
+            continue
+        if category == "entities" and type_filter:
+            if type_filter not in (item.get("type") or "").lower():
+                continue
+        if category == "biomes" and dimension:
+            if dimension not in (item.get("dimension") or "").lower():
+                continue
+        results.append(item)
+
+    if not results:
+        return f"No {category} matched the filters."
+
+    lines = [f"{category} ({len(results)} matches, showing first {min(limit, len(results))}):"]
+    for item in results[:limit]:
+        if category == "entities":
+            lines.append(f"  - {item['name']} ({item.get('displayName','')}) type={item.get('type','')}, category={item.get('category','')}")
+        elif category == "biomes":
+            lines.append(f"  - {item['name']} ({item.get('displayName','')}) dimension={item.get('dimension','')}")
+        elif category == "scoreboard_criteria":
+            lines.append(f"  - {item['name']} — {item.get('description','')}")
+        else:
+            lines.append(f"  - {item['name']} ({item.get('displayName','')})")
+
+    if len(results) > limit:
+        lines.append(f"  ... and {len(results) - limit} more")
+
+    return "\n".join(lines)
+
+
 # ══════════════════════════════════════════════════════════════════════════════════════════
 # Registry
 # ══════════════════════════════════════════════════════════════════════════════════════
@@ -1526,5 +1637,13 @@ registry.register(
     toolset="minecraft",
     schema=MC_STORY_SCHEMA,
     handler=lambda args, **kw: _handle_mc_story(args, **kw),
+    check_fn=check_minecraft_available,
+)
+
+registry.register(
+    name="mc_registry",
+    toolset="minecraft",
+    schema=MC_REGISTRY_SCHEMA,
+    handler=lambda args, **kw: _handle_mc_registry(args, **kw),
     check_fn=check_minecraft_available,
 )

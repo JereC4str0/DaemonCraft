@@ -143,59 +143,246 @@
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: #161b22; }
   ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+
+  .panel.collapsed .panel-body { display: none; }
+  .panel.collapsed { max-height: none; }
+  .panel-header { cursor: pointer; user-select: none; }
+  .panel-toggle {
+    background: none; border: none; color: #8b949e; cursor: pointer;
+    font-size: 0.75rem; padding: 2px 6px; margin-left: 8px;
+  }
+  .panel-toggle:hover { color: #c9d1d9; }
+  #global-controls { display: flex; gap: 8px; }
+  #global-controls button {
+    background: #21262d; border: 1px solid #30363d; color: #c9d1d9;
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem;
+  }
+  #global-controls button:hover { background: #30363d; }
+  .adventure-list { list-style: none; }
+  .adventure-item {
+    padding: 8px; border-bottom: 1px solid #21262d; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .adventure-item:hover { background: #21262d; }
+  .adventure-item.active { background: #1f6feb33; border-left-color: #58a6ff; }
+  .adventure-meta { color: #8b949e; font-size: 0.75rem; }
+  .adventure-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid #30363d; }
+  .phase-list { list-style: none; margin-top: 8px; }
+  .phase-item { padding: 6px 0; border-bottom: 1px solid #21262d; }
+
+  .bp-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .bp-meta-box {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .bp-meta-box label {
+    display: block;
+    font-size: 0.7rem;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .bp-meta-box value {
+    display: block;
+    color: #c9d1d9;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+  .bp-section-title {
+    font-weight: 600;
+    color: #8b949e;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 16px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #30363d;
+  }
+  .bp-phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    margin-bottom: 4px;
+  }
+  .bp-phase-header:hover { background: #21262d; }
+  .bp-phase-body {
+    padding: 10px 12px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    margin-bottom: 10px;
+  }
+  .bp-phase-body.collapsed { display: none; }
+  .bp-command {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: #d2a8ff;
+    margin: 4px 0;
+    word-break: break-all;
+  }
+  .bp-event-chat {
+    background: #161b22;
+    border-left: 3px solid #58a6ff;
+    padding: 6px 10px;
+    margin: 4px 0;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.82rem;
+  }
+  .bp-tag {
+    display: inline-block;
+    background: #21262d;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+    color: #8b949e;
+    margin-right: 4px;
+  }
+  .bp-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 900px) {
+    .bp-two-col { grid-template-columns: 1fr; }
+  }
+  [contenteditable="true"] {
+    border: 1px dashed #30363d;
+    border-radius: 4px;
+    padding: 2px 6px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  [contenteditable="true"]:hover {
+    border-color: #58a6ff;
+    background: #0d1117;
+  }
+  [contenteditable="true"]:focus {
+    border-color: #58a6ff;
+    background: #0d1117;
+  }
+  [contenteditable="true"].dirty {
+    border-color: #e3b341;
+    background: #e3b34111;
+  }
+  .bp-save-bar {
+    position: sticky;
+    bottom: 0;
+    background: #161b22;
+    border-top: 1px solid #30363d;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .bp-save-bar .status {
+    font-size: 0.8rem;
+    color: #8b949e;
+  }
+  .bp-save-bar .status.dirty { color: #e3b341; }
+  .bp-save-bar .status.saved { color: #3fb950; }
+  .bp-save-bar button {
+    background: #238636;
+    border: none;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .bp-save-bar button:disabled {
+    background: #21262d;
+    color: #484f58;
+    cursor: not-allowed;
+  }
+  .bp-save-bar button:hover:not(:disabled) { background: #2ea043; }
 </style>
 </head>
 <body>
 <header>
   <h1>🎮 DaemonCraft Dashboard — <span id="bot-name">Bot</span></h1>
-  <span id="conn-status">Connecting...</span>
+  <div style="display:flex;gap:12px;align-items:center">
+    <div id="global-controls">
+      <button onclick="collapseAll()">Collapse All</button>
+      <button onclick="expandAll()">Expand All</button>
+    </div>
+    <span id="conn-status">Connecting...</span>
+  </div>
 </header>
 
 <div class="grid">
   <div class="panel">
-    <div class="panel-header">Status</div>
+    <div class="panel-header" data-panel="status">Status<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="status-panel">
       <div class="empty">Waiting for data...</div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-header">Plan & Goals</div>
+    <div class="panel-header" data-panel="plan">Plan & Goals<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="plan-panel">
       <div class="empty">No active goal</div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-header">Live Chat</div>
+    <div class="panel-header" data-panel="chat">Live Chat<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="chat-panel">
       <div class="empty">No messages yet</div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-header">Action Log</div>
+    <div class="panel-header" data-panel="actions">Action Log<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="actions-panel">
       <div class="empty">No actions yet</div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-header">Inventory</div>
+    <div class="panel-header" data-panel="inventory">Inventory<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="inventory-panel">
       <div class="empty">Empty</div>
     </div>
   </div>
 
   <div class="panel">
-    <div class="panel-header">Background Task</div>
+    <div class="panel-header" data-panel="task">Background Task<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="task-panel">
       <div class="empty">No active task</div>
     </div>
   </div>
 
-  <div class="panel" style="grid-column: 1 / -1; max-height: 600px;">
-    <div class="panel-header" id="agent-header">Bot Mind — Raw Prompts & Responses</div>
+  
+  <div class="panel" style="grid-column: 1 / -1; max-height: 700px;">
+    <div class="panel-header" data-panel="adventures">Adventures<button class="panel-toggle">▼</button></div>
+    <div class="panel-body" id="adventures-panel">
+      <div class="empty">Loading blueprints...</div>
+    </div>
+  </div>
+
+<div class="panel" style="grid-column: 1 / -1; max-height: 600px;">
+    <div class="panel-header" data-panel="agent" id="agent-header">Bot Mind — Raw Prompts & Responses<button class="panel-toggle">▼</button></div>
     <div class="panel-body" id="agent-panel">
       <div class="empty">Waiting for agent turns...</div>
     </div>
@@ -206,6 +393,22 @@
 const wsUrl = `ws://${window.location.host}/ws`;
 let ws = null;
 let reconnectTimer = null;
+let MC_REGISTRY = null;
+
+async function fetchRegistry() {
+  if (MC_REGISTRY) return MC_REGISTRY;
+  try {
+    const res = await fetch('/registry');
+    const json = await res.json();
+    if (json.ok) {
+      MC_REGISTRY = json.data;
+      console.log('[dashboard] Registry loaded', MC_REGISTRY._meta?.version);
+    }
+  } catch (e) {
+    console.warn('[dashboard] Failed to load registry', e);
+  }
+  return MC_REGISTRY;
+}
 
 function fmtTime(ts) {
   if (!ts) return '';
@@ -224,6 +427,7 @@ function connect() {
     status.textContent = 'Live';
     status.className = '';
     console.log('[dashboard] WebSocket connected');
+    fetchRegistry();
   };
 
   ws.onmessage = (evt) => {
@@ -241,7 +445,122 @@ function connect() {
     if (!reconnectTimer) {
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
-        connect();
+        
+// ── Panel Collapse / Persistence ───────────────────
+function togglePanel(panel) {
+  panel.classList.toggle('collapsed');
+  const toggle = panel.querySelector('.panel-toggle');
+  if (toggle) toggle.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+  savePanelState();
+}
+function collapseAll() {
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.add('collapsed');
+    const t = p.querySelector('.panel-toggle');
+    if (t) t.textContent = '▶';
+  });
+  savePanelState();
+}
+function expandAll() {
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.remove('collapsed');
+    const t = p.querySelector('.panel-toggle');
+    if (t) t.textContent = '▼';
+  });
+  savePanelState();
+}
+function savePanelState() {
+  const state = {};
+  document.querySelectorAll('.panel').forEach((panel, idx) => {
+    const header = panel.querySelector('.panel-header');
+    const key = header?.dataset?.panel || `panel-${idx}`;
+    state[key] = panel.classList.contains('collapsed');
+  });
+  try { localStorage.setItem('dc_dashboard_panels', JSON.stringify(state)); } catch {}
+}
+function loadPanelState() {
+  try {
+    const raw = localStorage.getItem('dc_dashboard_panels');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    document.querySelectorAll('.panel').forEach((panel, idx) => {
+      const header = panel.querySelector('.panel-header');
+      const key = header?.dataset?.panel || `panel-${idx}`;
+      if (state[key]) {
+        panel.classList.add('collapsed');
+        const t = panel.querySelector('.panel-toggle');
+        if (t) t.textContent = '▶';
+      }
+    });
+  } catch {}
+}
+function initPanelToggles() {
+  document.querySelectorAll('.panel-header').forEach(h => {
+    h.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      const panel = h.closest('.panel');
+      if (panel) togglePanel(panel);
+    });
+  });
+  document.querySelectorAll('.panel-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const panel = btn.closest('.panel');
+      if (panel) togglePanel(panel);
+    });
+  });
+}
+
+// ── Adventures / Blueprints ────────────────────────
+async function fetchBlueprints() {
+  try {
+    const res = await fetch('/blueprints');
+    const json = await res.json();
+    if (json.ok) renderBlueprints(json.data.blueprints);
+    else renderBlueprintsError(json.error);
+  } catch (err) {
+    renderBlueprintsError(err.message);
+  }
+}
+function renderBlueprints(blueprints) {
+  const panel = document.getElementById('adventures-panel');
+  if (!blueprints || blueprints.length === 0) {
+    panel.innerHTML = '<div class="empty">No blueprints found</div>';
+    return;
+  }
+  let html = '<ul class="adventure-list">';
+  for (const bp of blueprints) {
+    html += `<li class="adventure-item" data-name="${bp.name}" onclick="selectBlueprint('${bp.name}')">`;
+    html += `<div style="font-weight:600">${escapeHtml(bp.title)}</div>`;
+    html += `<div class="adventure-meta">${escapeHtml(bp.theme)}${bp.author ? ' • ' + escapeHtml(bp.author) : ''}</div>`;
+    html += '</li>';
+  }
+  html += '</ul>';
+  html += '<div id="adventure-detail" class="adventure-detail" style="display:none"></div>';
+  panel.innerHTML = html;
+}
+function renderBlueprintsError(msg) {
+  const panel = document.getElementById('adventures-panel');
+  panel.innerHTML = `<div class="empty" style="color:#f85149">Error: ${escapeHtml(msg)}</div>`;
+}
+async function selectBlueprint(name) {
+  currentBlueprintName = name;
+  document.querySelectorAll('.adventure-item').forEach(i => i.classList.remove('active'));
+  const active = document.querySelector(`.adventure-item[data-name="${name}"]`);
+  if (active) active.classList.add('active');
+  const detail = document.getElementById('adventure-detail');
+  detail.style.display = 'block';
+  detail.innerHTML = '<div class="empty">Loading...</div>';
+  try {
+    const res = await fetch(`/blueprints/${name}`);
+    const json = await res.json();
+    if (json.ok) detail.innerHTML = renderBlueprintHtml(json.data);
+    else detail.innerHTML = `<div class="empty" style="color:#f85149">${escapeHtml(json.error)}</div>`;
+  } catch (err) {
+    detail.innerHTML = `<div class="empty" style="color:#f85149">${escapeHtml(err.message)}</div>`;
+  }
+}
+
       }, 3000);
     }
   };
@@ -429,6 +748,512 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+
+// ── Panel Collapse / Persistence ───────────────────
+function togglePanel(panel) {
+  panel.classList.toggle('collapsed');
+  const toggle = panel.querySelector('.panel-toggle');
+  if (toggle) toggle.textContent = panel.classList.contains('collapsed') ? '▶' : '▼';
+  savePanelState();
+}
+function collapseAll() {
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.add('collapsed');
+    const t = p.querySelector('.panel-toggle');
+    if (t) t.textContent = '▶';
+  });
+  savePanelState();
+}
+function expandAll() {
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.remove('collapsed');
+    const t = p.querySelector('.panel-toggle');
+    if (t) t.textContent = '▼';
+  });
+  savePanelState();
+}
+function savePanelState() {
+  const state = {};
+  document.querySelectorAll('.panel').forEach((panel, idx) => {
+    const header = panel.querySelector('.panel-header');
+    const key = header?.dataset?.panel || `panel-${idx}`;
+    state[key] = panel.classList.contains('collapsed');
+  });
+  try { localStorage.setItem('dc_dashboard_panels', JSON.stringify(state)); } catch {}
+}
+function loadPanelState() {
+  try {
+    const raw = localStorage.getItem('dc_dashboard_panels');
+    if (!raw) return;
+    const state = JSON.parse(raw);
+    document.querySelectorAll('.panel').forEach((panel, idx) => {
+      const header = panel.querySelector('.panel-header');
+      const key = header?.dataset?.panel || `panel-${idx}`;
+      if (state[key]) {
+        panel.classList.add('collapsed');
+        const t = panel.querySelector('.panel-toggle');
+        if (t) t.textContent = '▶';
+      }
+    });
+  } catch {}
+}
+function initPanelToggles() {
+  document.querySelectorAll('.panel-header').forEach(h => {
+    h.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      const panel = h.closest('.panel');
+      if (panel) togglePanel(panel);
+    });
+  });
+  document.querySelectorAll('.panel-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const panel = btn.closest('.panel');
+      if (panel) togglePanel(panel);
+    });
+  });
+}
+
+// ── Adventures / Blueprints ────────────────────────
+async function fetchBlueprints() {
+  try {
+    const res = await fetch('/blueprints');
+    const json = await res.json();
+    if (json.ok) renderBlueprints(json.data.blueprints);
+    else renderBlueprintsError(json.error);
+  } catch (err) {
+    renderBlueprintsError(err.message);
+  }
+}
+function renderBlueprints(blueprints) {
+  const panel = document.getElementById('adventures-panel');
+  if (!blueprints || blueprints.length === 0) {
+    panel.innerHTML = '<div class="empty">No blueprints found</div>';
+    return;
+  }
+  let html = '<ul class="adventure-list">';
+  for (const bp of blueprints) {
+    html += `<li class="adventure-item" data-name="${bp.name}" onclick="selectBlueprint('${bp.name}')">`;
+    html += `<div style="font-weight:600">${escapeHtml(bp.title)}</div>`;
+    html += `<div class="adventure-meta">${escapeHtml(bp.theme)}${bp.author ? ' • ' + escapeHtml(bp.author) : ''}</div>`;
+    html += '</li>';
+  }
+  html += '</ul>';
+  html += '<div id="adventure-detail" class="adventure-detail" style="display:none"></div>';
+  panel.innerHTML = html;
+}
+function renderBlueprintsError(msg) {
+  const panel = document.getElementById('adventures-panel');
+  panel.innerHTML = `<div class="empty" style="color:#f85149">Error: ${escapeHtml(msg)}</div>`;
+}
+async function selectBlueprint(name) {
+  currentBlueprintName = name;
+  document.querySelectorAll('.adventure-item').forEach(i => i.classList.remove('active'));
+  const active = document.querySelector(`.adventure-item[data-name="${name}"]`);
+  if (active) active.classList.add('active');
+  const detail = document.getElementById('adventure-detail');
+  detail.style.display = 'block';
+  detail.innerHTML = '<div class="empty">Loading...</div>';
+  try {
+    const res = await fetch(`/blueprints/${name}`);
+    const json = await res.json();
+    if (json.ok) detail.innerHTML = renderBlueprintHtml(json.data);
+    else detail.innerHTML = `<div class="empty" style="color:#f85149">${escapeHtml(json.error)}</div>`;
+  } catch (err) {
+    detail.innerHTML = `<div class="empty" style="color:#f85149">${escapeHtml(err.message)}</div>`;
+  }
+}
+let currentBlueprint = null;
+let currentBlueprintName = null;
+
+function markDirty(el) {
+  el.classList.add('dirty');
+  const status = document.getElementById('bp-save-status');
+  const btn = document.getElementById('bp-save-btn');
+  if (status) { status.textContent = 'Unsaved changes'; status.className = 'status dirty'; }
+  if (btn) btn.disabled = false;
+}
+
+function clearDirty() {
+  document.querySelectorAll('.dirty').forEach(el => el.classList.remove('dirty'));
+  const status = document.getElementById('bp-save-status');
+  const btn = document.getElementById('bp-save-btn');
+  if (status) { status.textContent = 'Saved'; status.className = 'status saved'; }
+  if (btn) btn.disabled = true;
+}
+
+async function saveBlueprint() {
+  if (!currentBlueprint || !currentBlueprintName) return;
+  const btn = document.getElementById('bp-save-btn');
+  const status = document.getElementById('bp-save-status');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  
+  const bp = JSON.parse(JSON.stringify(currentBlueprint));
+  
+  const mTitle = document.querySelector('[data-bp="metadata.title"]');
+  const mTheme = document.querySelector('[data-bp="metadata.theme"]');
+  const mTone = document.querySelector('[data-bp="metadata.tone"]');
+  const mAuthor = document.querySelector('[data-bp="metadata.author"]');
+  const mVersion = document.querySelector('[data-bp="metadata.version"]');
+  if (mTitle) bp.metadata.title = mTitle.textContent.trim();
+  if (mTheme) bp.metadata.theme = mTheme.textContent.trim();
+  if (mTone) bp.metadata.tone = mTone.textContent.trim();
+  if (mAuthor) bp.metadata.author = mAuthor.textContent.trim();
+  if (mVersion) bp.metadata.version = mVersion.textContent.trim();
+  
+  const sBiome = document.querySelector('[data-bp="setting.biome"]');
+  const sX = document.querySelector('[data-bp="setting.center.x"]');
+  const sY = document.querySelector('[data-bp="setting.center.y"]');
+  const sZ = document.querySelector('[data-bp="setting.center.z"]');
+  const sRadius = document.querySelector('[data-bp="setting.radius"]');
+  if (sBiome && bp.setting) bp.setting.biome = sBiome.value.trim();
+  if (sX && bp.setting?.center) bp.setting.center.x = parseInt(sX.textContent.trim()) || 0;
+  if (sY && bp.setting?.center) bp.setting.center.y = parseInt(sY.textContent.trim()) || 0;
+  if (sZ && bp.setting?.center) bp.setting.center.z = parseInt(sZ.textContent.trim()) || 0;
+  if (sRadius && bp.setting) bp.setting.radius = parseInt(sRadius.textContent.trim()) || 0;
+  
+  const initDesc = document.querySelector('[data-bp="init.description"]');
+  if (initDesc && bp.init) bp.init.description = initDesc.textContent.trim();
+  if (bp.init && bp.init.sensors) {
+    for (let i = 0; i < bp.init.sensors.length; i++) {
+      const senName = document.querySelector(`[data-bp="init.sensors.${i}.name"]`);
+      const senCrit = document.querySelector(`[data-bp="init.sensors.${i}.criterion"]`);
+      const senPoll = document.querySelector(`[data-bp="init.sensors.${i}.poll_command"]`);
+      if (senName) bp.init.sensors[i].name = senName.textContent.trim();
+      if (senCrit) bp.init.sensors[i].criterion = senCrit.value.trim();
+      if (senPoll) bp.init.sensors[i].poll_command = senPoll.value.trim();
+    }
+  }
+  if (bp.init && bp.init.commands) {
+    for (let i = 0; i < bp.init.commands.length; i++) {
+      const cmdEl = document.querySelector(`[data-bp="init.commands.${i}"]`);
+      if (cmdEl) bp.init.commands[i] = cmdEl.value.trim();
+    }
+  }
+  if (bp.phases) {
+    for (let i = 0; i < bp.phases.length; i++) {
+      const phName = document.querySelector(`[data-bp="phases.${i}.name"]`);
+      const phDesc = document.querySelector(`[data-bp="phases.${i}.description"]`);
+      const phTimeout = document.querySelector(`[data-bp="phases.${i}.timeout_minutes"]`);
+      if (phName) bp.phases[i].name = phName.textContent.trim();
+      if (phDesc) bp.phases[i].description = phDesc.textContent.trim();
+      if (phTimeout) bp.phases[i].timeout_minutes = parseInt(phTimeout.textContent.trim()) || 10;
+      const phSensorCmd = document.querySelector(`[data-bp="phases.${i}.trigger.sensor_command"]`);
+      const phCheckCmd = document.querySelector(`[data-bp="phases.${i}.trigger.check_command"]`);
+      const phExpected = document.querySelector(`[data-bp="phases.${i}.trigger.expected_value"]`);
+      if (phSensorCmd && bp.phases[i].trigger) bp.phases[i].trigger.sensor_command = phSensorCmd.value.trim();
+      if (phCheckCmd && bp.phases[i].trigger) bp.phases[i].trigger.check_command = phCheckCmd.value.trim();
+      if (phExpected && bp.phases[i].trigger) bp.phases[i].trigger.expected_value = parseInt(phExpected.textContent.trim()) || 0;
+      
+      if (bp.phases[i].objectives) {
+        for (let j = 0; j < bp.phases[i].objectives.length; j++) {
+          const objTitle = document.querySelector(`[data-bp="phases.${i}.objectives.${j}.title"]`);
+          const objDesc = document.querySelector(`[data-bp="phases.${i}.objectives.${j}.description"]`);
+          if (objTitle) bp.phases[i].objectives[j].title = objTitle.textContent.trim();
+          if (objDesc) bp.phases[i].objectives[j].description = objDesc.textContent.trim();
+        }
+      }
+      
+      if (bp.phases[i].events) {
+        for (let j = 0; j < bp.phases[i].events.length; j++) {
+          if (bp.phases[i].events[j].type === 'chat' && bp.phases[i].events[j].lines) {
+            for (let k = 0; k < bp.phases[i].events[j].lines.length; k++) {
+              const evLine = document.querySelector(`[data-bp="phases.${i}.events.${j}.lines.${k}"]`);
+              if (evLine) bp.phases[i].events[j].lines[k] = evLine.textContent.trim();
+            }
+          }
+          if (bp.phases[i].events[j].type === 'command') {
+            const evCmd = document.querySelector(`[data-bp="phases.${i}.events.${j}.command"]`);
+            if (evCmd) bp.phases[i].events[j].command = evCmd.value.trim();
+          }
+        }
+      }
+    }
+  }
+  
+  if (bp.entities) {
+    for (let i = 0; i < bp.entities.length; i++) {
+      const entName = document.querySelector(`[data-bp="entities.${i}.name"]`);
+      const entX = document.querySelector(`[data-bp="entities.${i}.location.x"]`);
+      const entY = document.querySelector(`[data-bp="entities.${i}.location.y"]`);
+      const entZ = document.querySelector(`[data-bp="entities.${i}.location.z"]`);
+      const entType = document.querySelector(`[data-bp="entities.${i}.type"]`);
+      if (entName) bp.entities[i].name = entName.textContent.trim();
+      if (entType) bp.entities[i].type = entType.value.trim();
+      if (entX) bp.entities[i].location.x = parseInt(entX.textContent.trim()) || 0;
+      if (entY) bp.entities[i].location.y = parseInt(entY.textContent.trim()) || 0;
+      if (entZ) bp.entities[i].location.z = parseInt(entZ.textContent.trim()) || 0;
+    }
+  }
+  
+  if (bp.objects) {
+    for (let i = 0; i < bp.objects.length; i++) {
+      const objName = document.querySelector(`[data-bp="objects.${i}.name"]`);
+      const objLore = document.querySelector(`[data-bp="objects.${i}.lore"]`);
+      const objType = document.querySelector(`[data-bp="objects.${i}.type"]`);
+      if (objName) bp.objects[i].name = objName.textContent.trim();
+      if (objType) bp.objects[i].type = objType.value.trim();
+      if (objLore) bp.objects[i].lore = objLore.textContent.trim();
+    }
+  }
+  
+  try {
+    const res = await fetch(`/blueprints/${currentBlueprintName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bp)
+    });
+    const json = await res.json();
+    if (json.ok) {
+      currentBlueprint = bp;
+      clearDirty();
+      if (status) status.textContent = 'Saved successfully';
+    } else {
+      if (status) { status.textContent = 'Error: ' + json.error; status.className = 'status dirty'; }
+    }
+  } catch (err) {
+    if (status) { status.textContent = 'Error: ' + err.message; status.className = 'status dirty'; }
+  }
+  if (btn) btn.textContent = 'Save Changes';
+}
+
+
+function buildBiomeSelect(currentBiome) {
+  if (!MC_REGISTRY || !MC_REGISTRY.biomes) {
+    return `<input type="text" data-bp="setting.biome" value="${escapeHtml(currentBiome || '')}" oninput="markDirty(this)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%">`;
+  }
+  const byDim = {};
+  for (const b of MC_REGISTRY.biomes) {
+    const dim = b.dimension || 'other';
+    if (!byDim[dim]) byDim[dim] = [];
+    byDim[dim].push(b);
+  }
+  let html = `<select data-bp="setting.biome" onchange="markDirty(this)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%;cursor:pointer">`;
+  html += `<option value="">-- select biome --</option>`;
+  for (const dim of ['overworld', 'nether', 'end', 'other']) {
+    if (!byDim[dim]) continue;
+    html += `<optgroup label="${dim}">`;
+    for (const b of byDim[dim].sort((a,b) => a.displayName.localeCompare(b.displayName))) {
+      const sel = b.name === currentBiome ? ' selected' : '';
+      html += `<option value="${escapeHtml(b.name)}"${sel}>${escapeHtml(b.displayName)}</option>`;
+    }
+    html += `</optgroup>`;
+  }
+  html += `</select>`;
+  return html;
+}
+
+
+function buildEntitySelect(currentType, dataBpAttr) {
+  if (!MC_REGISTRY || !MC_REGISTRY.entities) {
+    return `<input type="text" ${dataBpAttr} value="${escapeHtml(currentType || '')}" oninput="markDirty(this)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%">`;
+  }
+  const byCat = {};
+  for (const e of MC_REGISTRY.entities) {
+    if (e.type === 'projectile' || e.type === 'player' || e.type === 'other') continue;
+    const cat = e.category || e.type || 'Other';
+    if (!byCat[cat]) byCat[cat] = [];
+    byCat[cat].push(e);
+  }
+  let html = `<select ${dataBpAttr} onchange="markDirty(this)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%;cursor:pointer">`;
+  html += `<option value="">-- select entity --</option>`;
+  for (const cat of Object.keys(byCat).sort()) {
+    html += `<optgroup label="${escapeHtml(cat)}">`;
+    for (const e of byCat[cat].sort((a,b) => a.displayName.localeCompare(b.displayName))) {
+      const sel = e.name === currentType ? ' selected' : '';
+      html += `<option value="${escapeHtml(e.name)}"${sel}>${escapeHtml(e.displayName)}</option>`;
+    }
+    html += `</optgroup>`;
+  }
+  html += `</select>`;
+  return html;
+}
+
+function buildItemSelect(currentType, dataBpAttr) {
+  const inputHtml = `<input type="text" ${dataBpAttr} value="${escapeHtml(currentType || '')}" oninput="markDirty(this)" list="bp-item-datalist" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%">`;
+  if (!MC_REGISTRY || !MC_REGISTRY.items) return inputHtml;
+  let dl = '<datalist id="bp-item-datalist">';
+  for (const it of MC_REGISTRY.items) {
+    dl += `<option value="${escapeHtml(it.name)}">${escapeHtml(it.displayName)}</option>`;
+  }
+  dl += '</datalist>';
+  return inputHtml + dl;
+}
+
+function buildCriterionSelect(currentCriterion, dataBpAttr) {
+  if (!MC_REGISTRY || !MC_REGISTRY.scoreboard_criteria) {
+    return `<input type="text" ${dataBpAttr} value="${escapeHtml(currentCriterion || '')}" oninput="markDirty(this)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%">`;
+  }
+  let html = `<select ${dataBpAttr} onchange="markDirty(this)" style="background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;width:100%;cursor:pointer">`;
+  html += `<option value="">-- select criterion --</option>`;
+  for (const c of MC_REGISTRY.scoreboard_criteria) {
+    const sel = c.name === currentCriterion ? ' selected' : '';
+    html += `<option value="${escapeHtml(c.name)}"${sel}>${escapeHtml(c.name)} — ${escapeHtml(c.description)}</option>`;
+  }
+  html += `</select>`;
+  return html;
+}
+
+function renderBlueprintHtml(data) {
+  currentBlueprint = JSON.parse(JSON.stringify(data));
+  const m = data.metadata || {};
+  let html = '<div class="bp-meta-grid">';
+  html += `<div class="bp-meta-box"><label>Title</label><value contenteditable="true" data-bp="metadata.title" oninput="markDirty(this)">${escapeHtml(m.title || 'Untitled')}</value></div>`;
+  html += `<div class="bp-meta-box"><label>Theme</label><value contenteditable="true" data-bp="metadata.theme" oninput="markDirty(this)">${escapeHtml(m.theme || '—')}</value></div>`;
+  html += `<div class="bp-meta-box"><label>Tone</label><value contenteditable="true" data-bp="metadata.tone" oninput="markDirty(this)">${escapeHtml(m.tone || '—')}</value></div>`;
+  html += `<div class="bp-meta-box"><label>Author</label><value contenteditable="true" data-bp="metadata.author" oninput="markDirty(this)">${escapeHtml(m.author || '—')}</value></div>`;
+  html += `<div class="bp-meta-box"><label>Version</label><value contenteditable="true" data-bp="metadata.version" oninput="markDirty(this)">${escapeHtml(m.version || '—')}</value></div>`;
+  html += '</div>';
+
+  if (data.setting) {
+    const s = data.setting;
+    html += '<div class="bp-section-title">Setting</div>';
+    html += '<div class="bp-meta-grid">';
+    html += `<div class="bp-meta-box"><label>Biome</label>${buildBiomeSelect(s.biome)}</div>`;
+    html += `<div class="bp-meta-box"><label>Center X</label><value contenteditable="true" data-bp="setting.center.x" oninput="markDirty(this)">${s.center?.x ?? '?'}</value></div>`;
+    html += `<div class="bp-meta-box"><label>Center Y</label><value contenteditable="true" data-bp="setting.center.y" oninput="markDirty(this)">${s.center?.y ?? '?'}</value></div>`;
+    html += `<div class="bp-meta-box"><label>Center Z</label><value contenteditable="true" data-bp="setting.center.z" oninput="markDirty(this)">${s.center?.z ?? '?'}</value></div>`;
+    html += `<div class="bp-meta-box"><label>Radius</label><value contenteditable="true" data-bp="setting.radius" oninput="markDirty(this)">${s.radius ?? '—'}</value></div>`;
+    if (s.time_lock != null) html += `<div class="bp-meta-box"><label>Time Lock</label><value contenteditable="true" data-bp="setting.time_lock" oninput="markDirty(this)">${escapeHtml(s.time_lock)}</value></div>`;
+    if (s.weather_lock != null) html += `<div class="bp-meta-box"><label>Weather Lock</label><value contenteditable="true" data-bp="setting.weather_lock" oninput="markDirty(this)">${escapeHtml(s.weather_lock)}</value></div>`;
+    html += '</div>';
+  }
+
+  if (data.init) {
+    html += '<div class="bp-section-title">Init Setup</div>';
+    if (data.init.description) html += `<div contenteditable="true" data-bp="init.description" oninput="markDirty(this)" style="margin-bottom:8px;color:#c9d1d9;font-size:0.85rem">${escapeHtml(data.init.description)}</div>`;
+    if (data.init.sensors && data.init.sensors.length) {
+      html += '<div style="font-weight:600;font-size:0.78rem;color:#8b949e;margin-bottom:4px">Sensors</div>';
+      for (let sidx = 0; sidx < data.init.sensors.length; sidx++) {
+        const sen = data.init.sensors[sidx];
+        html += `<div class="bp-meta-box" style="margin-bottom:6px">`;
+        html += `<label contenteditable="true" data-bp="init.sensors.${sidx}.name" oninput="markDirty(this)">${escapeHtml(sen.name)}</label>`;
+        html += `<value>Criterion: ${buildCriterionSelect(sen.criterion, 'data-bp="init.sensors.${sidx}.criterion"')}</value>`;
+        if (sen.poll_command) html += `<textarea data-bp="init.sensors.${sidx}.poll_command" oninput="markDirty(this)" rows="2" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;margin-top:4px;font-family:monospace;font-size:0.78rem">${escapeHtml(sen.poll_command)}</textarea>`;
+        html += `</div>`;
+      }
+    }
+    if (data.init.commands && data.init.commands.length) {
+      html += '<div style="font-weight:600;font-size:0.78rem;color:#8b949e;margin-bottom:4px">Commands</div>';
+      for (let cidx = 0; cidx < data.init.commands.length; cidx++) {
+        const cmd = data.init.commands[cidx];
+        html += `<textarea data-bp="init.commands.${cidx}" oninput="markDirty(this)" rows="2" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;margin-bottom:4px;font-family:monospace;font-size:0.78rem">${escapeHtml(cmd)}</textarea>`;
+      }
+    }
+  }
+
+  if (data.phases && data.phases.length) {
+    html += '<div class="bp-section-title">Phases</div>';
+    for (let i = 0; i < data.phases.length; i++) {
+      const ph = data.phases[i];
+      html += `<div class="bp-phase-header" onclick="togglePhase(this)">`;
+      html += `<span><strong contenteditable="true" data-bp="phases.${i}.name" oninput="markDirty(this)">${i+1}. ${escapeHtml(ph.name)}</strong> <span class="bp-tag">${ph.timeout_minutes ?? '?'} min</span></span>`;
+      html += `<span style="color:#8b949e;font-size:0.75rem">▼</span>`;
+      html += '</div>';
+      html += `<div class="bp-phase-body collapsed">`;
+      if (ph.description) html += `<div contenteditable="true" data-bp="phases.${i}.description" oninput="markDirty(this)" style="margin-bottom:8px">${escapeHtml(ph.description)}</div>`;
+      
+      html += `<div class="bp-meta-grid" style="grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:4px;margin-bottom:8px">`;
+      html += `<div class="bp-meta-box" style="padding:6px"><label>Timeout (minutes)</label><value contenteditable="true" data-bp="phases.${i}.timeout_minutes" oninput="markDirty(this)">${ph.timeout_minutes ?? '?'}</value></div>`;
+      html += '</div>';
+      
+      if (ph.trigger) {
+        html += '<div style="font-weight:600;font-size:0.78rem;color:#8b949e;margin:6px 0 4px">Trigger</div>';
+        html += `<div class="bp-meta-grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:4px">`;
+        html += `<div class="bp-meta-box" style="padding:6px"><label>Type</label><value>${escapeHtml(ph.trigger.type)}</value></div>`;
+        if (ph.trigger.sensor) html += `<div class="bp-meta-box" style="padding:6px"><label>Sensor</label><value>${escapeHtml(ph.trigger.sensor)}</value></div>`;
+        if (ph.trigger.expected_value != null) html += `<div class="bp-meta-box" style="padding:6px"><label>Expected</label><value contenteditable="true" data-bp="phases.${i}.trigger.expected_value" oninput="markDirty(this)">${ph.trigger.expected_value}</value></div>`;
+        if (ph.trigger.sensor_command) html += `<div style="margin-top:4px"><label style="font-size:0.7rem;color:#8b949e">Sensor Command</label><textarea data-bp="phases.${i}.trigger.sensor_command" oninput="markDirty(this)" rows="2" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;font-family:monospace;font-size:0.78rem">${escapeHtml(ph.trigger.sensor_command)}</textarea></div>`;
+        if (ph.trigger.check_command) html += `<div style="margin-top:4px"><label style="font-size:0.7rem;color:#8b949e">Check Command</label><textarea data-bp="phases.${i}.trigger.check_command" oninput="markDirty(this)" rows="2" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;font-family:monospace;font-size:0.78rem">${escapeHtml(ph.trigger.check_command)}</textarea></div>`;
+        html += '</div>';
+      }
+      
+      if (ph.objectives && ph.objectives.length) {
+        html += '<div style="font-weight:600;font-size:0.78rem;color:#8b949e;margin:6px 0 4px">Objectives</div>';
+        html += '<ul class="phase-list">';
+        for (let j = 0; j < ph.objectives.length; j++) {
+          const obj = ph.objectives[j];
+          html += `<li class="phase-item"><strong contenteditable="true" data-bp="phases.${i}.objectives.${j}.title" oninput="markDirty(this)">${escapeHtml(obj.title)}</strong><div contenteditable="true" data-bp="phases.${i}.objectives.${j}.description" oninput="markDirty(this)" style="color:#8b949e;font-size:0.78rem">${escapeHtml(obj.description || '')}</div></li>`;
+        }
+        html += '</ul>';
+      }
+      
+      if (ph.events && ph.events.length) {
+        html += '<div style="font-weight:600;font-size:0.78rem;color:#8b949e;margin:6px 0 4px">Events</div>';
+        for (let j = 0; j < ph.events.length; j++) {
+          const ev = ph.events[j];
+          if (ev.type === 'chat' && ev.lines) {
+            for (let k = 0; k < ev.lines.length; k++) {
+              html += `<div class="bp-event-chat" contenteditable="true" data-bp="phases.${i}.events.${j}.lines.${k}" oninput="markDirty(this)">${escapeHtml(ev.lines[k])}</div>`;
+            }
+          } else {
+            if (ev.type === 'command' && ev.command) {
+            html += `<div style="margin-bottom:4px"><label style="font-size:0.7rem;color:#8b949e">${escapeHtml(ev.description || 'Command')}</label><textarea data-bp="phases.${i}.events.${j}.command" oninput="markDirty(this)" rows="2" style="width:100%;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:4px 8px;border-radius:6px;font-family:monospace;font-size:0.78rem">${escapeHtml(ev.command)}</textarea></div>`;
+          } else {
+            html += `<div class="bp-event-chat">${escapeHtml(JSON.stringify(ev))}</div>`;
+          }
+          }
+        }
+      }
+      
+      if (ph.flags) {
+        html += '<div style="font-weight:600;font-size:0.78rem;color:#8b949e;margin:6px 0 4px">Flags</div>';
+        html += `<div class="bp-command">${escapeHtml(JSON.stringify(ph.flags))}</div>`;
+      }
+      
+      html += '</div>';
+    }
+  }
+
+  if (data.entities && data.entities.length) {
+    html += '<div class="bp-section-title">Entities</div>';
+    html += '<div class="bp-two-col">';
+    for (let i = 0; i < data.entities.length; i++) {
+      const ent = data.entities[i];
+      html += '<div class="bp-meta-box">';
+      html += `<label contenteditable="true" data-bp="entities.${i}.name" oninput="markDirty(this)">${escapeHtml(ent.name || ent.type)}</label>`;
+      html += `<value>Type: ${buildEntitySelect(ent.type, 'data-bp="entities.${i}.type"')} at <span contenteditable="true" data-bp="entities.${i}.location.x" oninput="markDirty(this)">${ent.location?.x ?? '?'}</span>, <span contenteditable="true" data-bp="entities.${i}.location.y" oninput="markDirty(this)">${ent.location?.y ?? '?'}</span>, <span contenteditable="true" data-bp="entities.${i}.location.z" oninput="markDirty(this)">${ent.location?.z ?? '?'}</span></value>`;
+      if (ent.properties) html += `<div class="bp-command" style="margin-top:6px">${escapeHtml(JSON.stringify(ent.properties))}</div>`;
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  if (data.objects && data.objects.length) {
+    html += '<div class="bp-section-title">Objects</div>';
+    html += '<div class="bp-two-col">';
+    for (let i = 0; i < data.objects.length; i++) {
+      const obj = data.objects[i];
+      html += '<div class="bp-meta-box">';
+      html += `<label contenteditable="true" data-bp="objects.${i}.name" oninput="markDirty(this)">${escapeHtml(obj.name || 'Object')}</label>`;
+      html += `<value>Type: ${buildItemSelect(obj.type, 'data-bp="objects.${i}.type"')}</value>`;
+      if (obj.lore) html += `<div contenteditable="true" data-bp="objects.${i}.lore" oninput="markDirty(this)" style="margin-top:4px;color:#8b949e;font-size:0.78rem">${escapeHtml(obj.lore)}</div>`;
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  if (data.completion) {
+    html += '<div class="bp-section-title">Completion</div>';
+    html += `<div class="bp-meta-box"><label>Condition</label><value>${escapeHtml(data.completion.condition || '—')}</value></div>`;
+    if (data.completion.on_complete) html += `<div class="bp-command">${escapeHtml(data.completion.on_complete)}</div>`;
+  }
+
+  if (data.cleanup) {
+    html += '<div class="bp-section-title">Cleanup</div>';
+    if (data.cleanup.description) html += `<div style="margin-bottom:6px">${escapeHtml(data.cleanup.description)}</div>`;
+    if (data.cleanup.action) html += `<div class="bp-command">${escapeHtml(data.cleanup.action)}</div>`;
+  }
+
+  html += `<div class="bp-save-bar"><span id="bp-save-status" class="status">No changes</span><button id="bp-save-btn" onclick="saveBlueprint()" disabled>Save Changes</button></div>`;
+
+  return html;
+}
+
+initPanelToggles();
+loadPanelState();
+fetchBlueprints();
 
 connect();
 </script>
