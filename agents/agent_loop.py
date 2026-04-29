@@ -197,6 +197,12 @@ def load_profile_config(profile_name: str) -> dict:
     profile_dir = get_profile_dir(profile_name)
     config_path = profile_dir / "config.yaml"
 
+    # Load profile .env so credentials (MINIMAX_API_KEY, etc.) are available
+    env_path = profile_dir / ".env"
+    if env_path.exists():
+        from hermes_cli.env_loader import load_hermes_dotenv
+        load_hermes_dotenv(hermes_home=Path.home() / ".hermes", project_env=env_path)
+
     config = {}
     if config_path.exists():
         import yaml
