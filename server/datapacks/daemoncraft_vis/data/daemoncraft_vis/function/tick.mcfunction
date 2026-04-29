@@ -22,3 +22,14 @@ team join pamplinas Pamplinas
 
 # Permanent glowing effect for all players (so you can see them through walls)
 effect give @a minecraft:glowing 999999 0 true
+
+# Blueprint book — enable trigger for all players
+scoreboard players enable @a dc_build
+
+# Blueprint book — detect triggers and spawn structures
+execute as @a[scores={dc_build=1}] at @s run function daemoncraft_vis:build/casa
+execute as @a[scores={dc_build=2}] at @s run function daemoncraft_vis:build/torre
+execute as @a[scores={dc_build=3}] at @s run function daemoncraft_vis:build/altar
+
+# Reset build triggers
+scoreboard players set @a[scores={dc_build=1..}] dc_build 0

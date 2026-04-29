@@ -1,0 +1,2 @@
+# Give the Blueprint Book to all players
+give @a written_book[written_book_content={title:"Libro de Blueprints",author:"DaemonCraft",pages:['{"text":"Elegi una estructura:\\n\\n","extra":[{"text":"[Casa]","color":"green","clickEvent":{"action":"run_command","value":"/trigger dc_build set 1"}},{"text":"\\n\\n"},{"text":"[Torre]","color":"blue","clickEvent":{"action":"run_command","value":"/trigger dc_build set 2"}},{"text":"\\n\\n"},{"text":"[Altar]","color":"red","clickEvent":{"action":"run_command","value":"/trigger dc_build set 3"}}]}']}] 1

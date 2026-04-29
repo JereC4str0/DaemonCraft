@@ -2,6 +2,9 @@
 scoreboard objectives add dc_x dummy
 scoreboard objectives add dc_y dummy
 scoreboard objectives add dc_z dummy
+
+# Blueprint book trigger system
+scoreboard objectives add dc_build trigger
 team add marcus
 team modify marcus color red
 team add sarah

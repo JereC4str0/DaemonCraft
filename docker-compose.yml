@@ -15,9 +15,9 @@ services:
       MOTD: "\\u00A72DaemonCraft\\u00A7r Development Server"
 
       # --- Memory ---
-      MEMORY: "12G"
-      INIT_MEMORY: "8G"
-      MAX_MEMORY: "12G"
+      MEMORY: "2G"
+      INIT_MEMORY: "1G"
+      MAX_MEMORY: "2G"
 
       # --- Gameplay / Dev Settings ---
       ONLINE_MODE: "false"
@@ -49,6 +49,8 @@ services:
       TZ: "UTC"
     volumes:
       - ./server/data:/data
+      # Mount our datapack specifically (read-only), leaving datapacks dir writable for Bukkit
+      - ./server/datapacks/daemoncraft_vis:/data/world/datapacks/daemoncraft_vis:ro
       # Mount Denizen scripts from repo (read-only)
       - ./server/plugins/denizen:/data/plugins/Denizen/scripts:ro
       # Mount for manual modpack fallback zip (read-only)
