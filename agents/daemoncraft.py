@@ -162,7 +162,7 @@ def ensure_base_profile() -> Path:
             "restart_drain_timeout": 60,
             "api_max_retries": 3,
             "service_tier": "",
-            "tool_use_enforcement": "auto",
+            "tool_use_enforcement": "true",
             "gateway_timeout_warning": 900,
             "gateway_notify_interval": 600,
             "reasoning_effort": "xhigh",

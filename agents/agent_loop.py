@@ -24,6 +24,14 @@ HERMES_DIR = Path.home() / ".hermes" / "hermes-agent"
 if str(HERMES_DIR) not in sys.path:
     sys.path.insert(0, str(HERMES_DIR))
 
+# Ensure DaemonCraft agents (hermescraft tools) are on path
+DAEMONCRAFT_DIR = Path(__file__).parent
+if str(DAEMONCRAFT_DIR) not in sys.path:
+    sys.path.insert(0, str(DAEMONCRAFT_DIR))
+
+# Import Minecraft tools so they register with Hermes before agent creation
+import hermescraft.minecraft_tools  # noqa: F401
+
 from run_agent import AIAgent
 
 MC_API_URL = os.getenv("MC_API_URL", "http://localhost:3001")
