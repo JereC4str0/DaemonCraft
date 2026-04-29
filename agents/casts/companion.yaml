@@ -7,9 +7,11 @@ mode: companion
 soul_file: SOUL-minecraft.md
 
 agents:
-  - name: Steve
+  - name: HermesBot
     template: landfolk/steve
-    port: 3001
-    model: MiniMax-M2.7
-    provider: minimax
-    base_url: https://api.minimax.chat/v1
+    port: 3002
+    model: kimi-k2.6
+    provider: kimi-coding
+    env:
+      DISABLE_PHOTO: "true"
+      DISABLE_VIEWER: "true"
