@@ -5,6 +5,7 @@ scoreboard objectives add dc_z dummy
 
 # Blueprint book trigger system
 scoreboard objectives add dc_build trigger
+
 team add marcus
 team modify marcus color red
 team add sarah
@@ -29,3 +30,6 @@ team add flint
 team modify flint color dark_gray
 team add pamplinas
 team modify pamplinas color light_purple
+
+# Start the 1-second periodic function (replaces any existing schedule)
+schedule function daemoncraft_vis:second 20t replace

@@ -84,7 +84,13 @@ import {
   recipeDiagnostics,
   recipeIngredientCounts,
 } from './lib/action_feedback.js';
-import { Camera } from 'mine-photo';
+let Camera = null;
+try {
+  const minePhoto = await import('mine-photo');
+  Camera = minePhoto.Camera;
+} catch (e) {
+  console.log('[init] mine-photo unavailable (canvas native deps missing), screenshots via prismarine-viewer only');
+}
 import { mineflayer as mineflayerViewer } from 'prismarine-viewer';
 import puppeteer from 'puppeteer';
 
@@ -581,26 +587,34 @@ async function createBotImpl() {
         }, delay);
       });
 
-      // Initialize ray-tracing camera for screenshots
-      try {
-        photoCamera = new Camera(bot);
-        photoCamera.resize(854, 480);
-        photoCamera.samplesPerPixel = 8;        // default 8 (was 16)
-        photoCamera.renderDistance = 48;
-        photoCamera.maxBounces = 2;
-        photoCamera.fov = 90;
-        photoScanReady = false;
-        log('[Photo] Starting initial world scan...');
-        photoScanPromise = photoCamera.scan(48, 24, 48).then(() => {
-          photoScanReady = true;
-          log(`[Photo] Camera scan complete — screenshots ready`);
-        }).catch(err => {
-          log(`[Photo] Camera scan failed: ${err.message}`);
-          photoScanReady = false;
-        });
-        log(`[Photo] Camera initialized, background scan started...`);
-      } catch (err) {
-        log(`[Photo] Camera init failed: ${err.message}`);
+      // Initialize ray-tracing camera for screenshots (skip if DISABLE_PHOTO is set)
+      if (!process.env.DISABLE_PHOTO) {
+        try {
+          if (Camera) {
+            photoCamera = new Camera(bot);
+            photoCamera.resize(640, 360);          // reduced resolution
+            photoCamera.samplesPerPixel = 4;       // reduced quality
+            photoCamera.renderDistance = 32;       // reduced distance
+            photoCamera.maxBounces = 1;
+            photoCamera.fov = 90;
+            photoScanReady = false;
+            log('[Photo] Starting initial world scan...');
+            photoScanPromise = photoCamera.scan(32, 16, 32).then(() => {
+              photoScanReady = true;
+              log(`[Photo] Camera scan complete — screenshots ready`);
+            }).catch(err => {
+              log(`[Photo] Camera scan failed: ${err.message}`);
+              photoScanReady = false;
+            });
+            log(`[Photo] Camera initialized, background scan started...`);
+          } else {
+            log('[Photo] mine-photo not loaded, skipping camera init');
+          }
+        } catch (err) {
+          log(`[Photo] Camera init failed: ${err.message}`);
+        }
+      } else {
+        log('[Photo] DISABLE_PHOTO set, skipping camera init');
       }
 
       botReady = true;
@@ -608,13 +622,17 @@ async function createBotImpl() {
       const locs = loadLocations(); if(!locs.spawn){locs.spawn={...posObj(),saved:new Date().toISOString()};saveLocations(locs);}
       log(`Connected! Spawned at ${fmt(bot.entity.position.x)}, ${fmt(bot.entity.position.y)}, ${fmt(bot.entity.position.z)}`);
 
-      // Start prismarine-viewer for screenshot capability
-      try {
-        const viewerPort = config.api.port + 1000;
-        viewerServer = mineflayerViewer(bot, { port: viewerPort, firstPerson: true });
-        log(`[Viewer] Serving at http://localhost:${viewerPort}`);
-      } catch (err) {
-        log(`[Viewer] Failed to start: ${err.message}`);
+      // Start prismarine-viewer for screenshot capability (skip if DISABLE_VIEWER is set)
+      if (!process.env.DISABLE_VIEWER) {
+        try {
+          const viewerPort = config.api.port + 1000;
+          viewerServer = mineflayerViewer(bot, { port: viewerPort, firstPerson: true });
+          log(`[Viewer] Serving at http://localhost:${viewerPort}`);
+        } catch (err) {
+          log(`[Viewer] Failed to start: ${err.message}`);
+        }
+      } else {
+        log('[Viewer] DISABLE_VIEWER set, skipping viewer init');
       }
 
       resolve(bot);

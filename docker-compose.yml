@@ -14,10 +14,26 @@ services:
       SERVER_NAME: "DaemonCraft-Dev"
       MOTD: "\\u00A72DaemonCraft\\u00A7r Development Server"
 
-      # --- Memory ---
-      MEMORY: "2G"
-      INIT_MEMORY: "1G"
-      MAX_MEMORY: "2G"
+      # --- Memory (tuned for 3.7GB host) ---
+      MEMORY: "1200M"
+      INIT_MEMORY: "800M"
+      MAX_MEMORY: "1200M"
+
+      # --- Aikar's Flags optimized for low RAM ---
+      JVM_OPTS: >-
+        -XX:+UseG1GC
+        -XX:+ParallelRefProcEnabled
+        -XX:MaxGCPauseMillis=200
+        -XX:+UnlockExperimentalVMOptions
+        -XX:+DisableExplicitGC
+        -XX:+AlwaysPreTouch
+        -XX:G1NewSizePercent=20
+        -XX:G1MaxNewSizePercent=30
+        -XX:G1HeapRegionSize=4M
+        -XX:G1ReservePercent=20
+        -XX:G1HeapWastePercent=5
+        -XX:+UseStringDeduplication
+        -XX:+UseCompressedOops
 
       # --- Gameplay / Dev Settings ---
       ONLINE_MODE: "false"
@@ -26,24 +42,27 @@ services:
       ALLOW_FLIGHT: "true"
       ENABLE_COMMAND_BLOCK: "true"
       SPAWN_PROTECTION: "0"
-      MAX_PLAYERS: "20"
-      VIEW_DISTANCE: "10"
-      SIMULATION_DISTANCE: "10"
+      MAX_PLAYERS: "5"
+      VIEW_DISTANCE: "6"
+      SIMULATION_DISTANCE: "6"
       GAME_MODE: "survival"
+      MAX_WORLD_SIZE: "10000"
+      GENERATE_STRUCTURES: "false"
+      SPAWN_ANIMALS: "false"
+      SPAWN_MONSTERS: "false"
+      SPAWN_NPCS: "true"
+      ENTITY_BROADCAST_RANGE_PERCENTAGE: "50"
+      SYNC_CHUNK_WRITES: "false"
+      USE_NATIVE_TRANSPORT: "true"
+      PREVENT_PROXY_CONNECTIONS: "false"
+      ENABLE_JMX_MONITORING: "false"
+      ENABLE_STATUS: "true"
+      NETWORK_COMPRESSION_THRESHOLD: "64"
 
-      # --- Modpack (CurseForge Auto-Install) ---
-      # Requires a CurseForge API key. See docs/server-setup.md for details.
-      # Uncomment the lines below and set CF_API_KEY in .env to enable:
+      # --- Modpack (disabled for dev) ---
       # MODPACK_PLATFORM: "CURSEFORGE"
-      # CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/phi-craft/files/7654543"
+      # CF_PAGE_URL: "..."
       # CF_API_KEY: ${CF_API_KEY:-}
-
-      # --- Manual Fallback ---
-      # 1. Download the Phi-Craft modpack .zip manually.
-      # 2. Place it in ./server/modpacks/phi-craft.zip
-      # 3. Uncomment the lines below:
-      # MODPACK: "/modpacks/phi-craft.zip"
-      # MODPACK_PLATFORM: ""
 
       # --- Logging ---
       TZ: "UTC"
@@ -62,61 +81,67 @@ services:
       start_period: 1m
       interval: 5s
       retries: 20
+    deploy:
+      resources:
+        limits:
+          memory: 1400M
+        reservations:
+          memory: 800M
 
   # ---------------------------------------------------------------------------
-  # LAN Discovery Broadcaster — makes dedicated server visible in LAN list
+  # LAN Discovery Broadcaster — disabled to save RAM/CPU
   # ---------------------------------------------------------------------------
-  lan-broadcast:
-    image: python:3-alpine
-    container_name: daemoncraft-lan-broadcast
-    restart: unless-stopped
-    network_mode: host
-    environment:
-      BROADCAST_MOTD: "DaemonCraft Dev Server"
-      BROADCAST_PORT: "25565"
-    volumes:
-      - ./lan-broadcast/broadcast.py:/broadcast.py:ro
-    command: python /broadcast.py
+  # lan-broadcast:
+  #   image: python:3-alpine
+  #   container_name: daemoncraft-lan-broadcast
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   environment:
+  #     BROADCAST_MOTD: "DaemonCraft Dev Server"
+  #     BROADCAST_PORT: "25565"
+  #   volumes:
+  #     - ./lan-broadcast/broadcast.py:/broadcast.py:ro
+  #   command: python /broadcast.py
 
   # ---------------------------------------------------------------------------
-  # Agent Bridge — Python Control Plane
+  # Agent Bridge — disabled, bot server is used directly
   # ---------------------------------------------------------------------------
-  bridge:
-    build:
-      context: ./agent-bridge
-      dockerfile: Dockerfile
-    container_name: daemoncraft-bridge
-    restart: unless-stopped
-    environment:
-      FLASK_HOST: 0.0.0.0
-      FLASK_PORT: 5000
-      FLASK_DEBUG: "false"
-      BOT_REGISTRY: ""
-      TRIGGER_TIMEOUT: "30"
-      LOG_LEVEL: INFO
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./agent-bridge:/app
-    networks:
-      - daemoncraft
-    depends_on:
-      - minecraft
+  # bridge:
+  #   build:
+  #     context: ./agent-bridge
+  #     dockerfile: Dockerfile
+  #   container_name: daemoncraft-bridge
+  #   restart: unless-stopped
+  #   environment:
+  #     FLASK_HOST: 0.0.0.0
+  #     FLASK_PORT: 5000
+  #     FLASK_DEBUG: "false"
+  #     BOT_REGISTRY: ""
+  #     TRIGGER_TIMEOUT: "30"
+  #     LOG_LEVEL: INFO
+  #   ports:
+  #     - "5000:5000"
+  #   volumes:
+  #     - ./agent-bridge:/app
+  #   networks:
+  #     - daemoncraft
+  #   depends_on:
+  #     - minecraft
 
   # ---------------------------------------------------------------------------
-  # Redis — Message Bus for Future Swarm
+  # Redis — disabled to save RAM
   # ---------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: daemoncraft-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis-data:/data
-    networks:
-      - daemoncraft
-    ports:
-      - "6379:6379"
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: daemoncraft-redis
+  #   restart: unless-stopped
+  #   command: redis-server --appendonly yes
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - daemoncraft
+  #   ports:
+  #     - "6379:6379"
 
 # ---------------------------------------------------------------------------
 # Networks and Volumes
