@@ -402,7 +402,6 @@ def start_agent(
     interval: int = 30,
     always_chat: bool = False,
     max_chat_chars: int | None = None,
-    chat_format: str | None = None,
 ) -> int:
     """Start the Hermes agent using the native persistent loop. Returns PID."""
     profile_name = agent_name.lower().replace(" ", "-")
@@ -428,8 +427,6 @@ def start_agent(
         env["MC_ALWAYS_CHAT"] = "1"
     if max_chat_chars:
         env["MC_MAX_CHAT_CHARS"] = str(max_chat_chars)
-    if chat_format:
-        env["MC_CHAT_FORMAT"] = chat_format
 
     log(f"Starting persistent agent for {agent_name}...", cast_name)
     proc = subprocess.Popen(
@@ -495,8 +492,7 @@ def cmd_start(cast_name: str, cast: dict, mc_host: str, mc_port: int):
         # 3. Start agent
         always_chat = agent.get("always_chat", False)
         max_chat_chars = agent.get("max_chat_chars")
-        chat_format = agent.get("chat_format")
-        start_agent(cast_name, name, port, always_chat=always_chat, max_chat_chars=max_chat_chars, chat_format=chat_format)
+        start_agent(cast_name, name, port, always_chat=always_chat, max_chat_chars=max_chat_chars)
 
         time.sleep(2)  # Stagger to avoid resource spikes
 

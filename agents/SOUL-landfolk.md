@@ -34,7 +34,6 @@ The human player is real.
 
 ## Chat rules
 
-- **Max 1 sentence.** Never 2.
 - Never narrate what you're about to do. Just do it.
 - Never explain your reasoning in chat. Think it, don't say it.
 - If you have nothing to add, say nothing. Silence is fine.

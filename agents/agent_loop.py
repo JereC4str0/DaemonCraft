@@ -76,65 +76,38 @@ def send_heartbeat(next_turn_in: float | None = None, turn_in_progress: bool = F
         pass
 
 
-def _send_chat_chunks(text: str, max_len: int = 240):
-    """Send SAY: lines to Minecraft chat. 
-    
-    We do NOT truncate — the model must learn to generate short SAY: lines.
-    If a line exceeds the Minecraft protocol limit (~256 bytes), we reject it
-    with a loud error so the model sees the failure and corrects its behavior.
-    
-    For multi-line responses, split on newlines and send each line separately.
+def _clean_response_for_chat(text: str) -> str:
+    """Best-effort cleanup. Currently a no-op; reserved for future tag stripping."""
+    if not text:
+        return ""
+    return text.strip()
+
+
+def _post_chat(text: str) -> None:
+    """Hand the full text to the bot server. Server does chunking + delivery.
+
+    No pre-chunking, no length filtering, no SAY: parsing. The server is the
+    sole authority on what reaches Minecraft.
     """
-    text = text.strip()
+    text = _clean_response_for_chat(text)
     if not text:
         return
-
-    lines = [ln.strip() for ln in text.split("\n") if ln.strip()]
-    
-    for i, line in enumerate(lines):
-        # Reject lines that are too long for Minecraft protocol
-        # Minecraft chat limit is 256 bytes; we use 240 chars as safe threshold
-        if len(line) > max_len:
-            print(
-                f"[loop] CHAT TOO LONG ({len(line)} chars, max {max_len}). "
-                f"NOT SENT. The model must generate shorter SAY: lines. "
-                f"Content: {line[:80]}...",
-                flush=True,
-            )
-            continue
-        
-        try:
-            payload = json.dumps({"message": line}).encode("utf-8")
-            req = urllib.request.Request(
-                f"{MC_API_URL}/chat/send",
-                data=payload,
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=5) as resp:
-                pass
-            print(f"[loop] Auto-sent: {line[:80]}", flush=True)
-        except Exception as e:
-            print(f"[loop] Auto-chat failed: {e}", flush=True)
-        # Small delay between lines so they arrive in order
-        if i < len(lines) - 1:
-            time.sleep(0.3)
-
-
-def _extract_say_lines(text: str) -> list[str]:
-    """Parse SAY: formatted lines from agent responses.
-
-    Format: 'SAY: <message>' — one per line. Only the text after 'SAY: ' is sent.
-    Lines without SAY: prefix are ignored (internal monologue, reasoning, etc.).
-    """
-    lines = []
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if line.upper().startswith("SAY:"):
-            msg = line[4:].strip()
-            if msg:
-                lines.append(msg)
-    return lines
+    payload = json.dumps({"message": text}).encode("utf-8")
+    req = urllib.request.Request(
+        f"{MC_API_URL}/chat/send",
+        data=payload,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            sent = data.get("fragments_sent", 0)
+            dropped = data.get("fragments_dropped", 0)
+            if dropped:
+                print(f"[loop] Chat: {sent} fragments sent, {dropped} dropped (cap)", flush=True)
+    except Exception as e:
+        print(f"[loop] /chat/send failed: {e}", flush=True)
 
 
 def _safe_trim_history(messages: list, max_msgs: int = 20) -> list:
@@ -1000,22 +973,15 @@ def run_agent_loop(profile_name: str, initial_prompt: str, interval: int = 30):
                     print("[loop] Budget exhausted — tools executed but summary failed. Will retry next turn.", flush=True)
                     conversation_history = []
                 elif response and (is_chat_triggered or os.getenv("MC_ALWAYS_CHAT", "").lower() in ("1", "true", "yes")):
-                    # Auto-send response text to Minecraft chat.
-                    # We send even if mc_chat was used, because the final response
-                    # may contain additional narrative text beyond what mc_chat sent.
-                    # BUT: never leak framework interruption messages into the game.
+                    # If the agent used mc_chat this turn, it already spoke — don't duplicate.
+                    # Otherwise, the final_response IS the chat output.
                     chat_msg = response.strip()
-                    if chat_msg and not chat_msg.startswith("Operation interrupted"):
-                        chat_format = os.getenv("MC_CHAT_FORMAT", "").lower()
-                        if chat_format == "say_lines":
-                            say_lines = _extract_say_lines(chat_msg)
-                            if say_lines:
-                                for line in say_lines:
-                                    _send_chat_chunks(line, max_len=240)
-                            else:
-                                print("[loop] No SAY: lines found in response — nothing sent to chat.", flush=True)
-                        else:
-                            _send_chat_chunks(chat_msg)
+                    if (
+                        chat_msg
+                        and not chat_msg.startswith("Operation interrupted")
+                        and not mc_chat_used
+                    ):
+                        _post_chat(chat_msg)
 
                 if response and not is_budget_error:
                     print(f"[loop] Response: {response[:200]}", flush=True)

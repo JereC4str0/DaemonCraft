@@ -184,6 +184,17 @@ let isConnecting = false; // Guard against concurrent createBot() calls
 const MAX_LOG = 100;
 const MAX_QUEUE = 20;
 
+// Minecraft chat chunking tunables
+const MC_FRAGMENT_MAX_CHARS = parseInt(process.env.MC_FRAGMENT_MAX_CHARS || "240", 10);
+const MC_MAX_FRAGMENTS = parseInt(process.env.MC_MAX_FRAGMENTS || "3", 10);
+const MC_FRAGMENT_DELAY_MS = parseInt(process.env.MC_FRAGMENT_DELAY_MS || "300", 10);
+const MC_PROTOCOL_BYTE_LIMIT = 256;        // Minecraft hard limit
+const MC_THROTTLE_WINDOW_MS = 10_000;
+const MC_THROTTLE_WINDOW_MAX = 5;
+
+// Per-bot sliding-window state (anti-spam). One server.js = one bot.
+let recentFragments = [];
+
 // Rolling buffer of recent action outcomes for loop detection
 let actionHistory = []; // { action, status, time }
 const MAX_ACTION_HISTORY = 100;
@@ -660,6 +671,113 @@ function ensureBot() {
     throw new Error('Bot not connected. POST /connect to retry.');
   }
   return bot;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Chat Chunking & Delivery
+// ═══════════════════════════════════════════════════════════════════
+
+function chunkForMc(text, maxChars = MC_FRAGMENT_MAX_CHARS, maxFragments = MC_MAX_FRAGMENTS) {
+  text = text.replace(/\s+/g, ' ').trim();
+  if (!text) return { fragments: [], truncated: false };
+
+  const sentenceRe = /[^.!?…]+[.!?…]+(?:\s+|$)|[^.!?…]+$/g;
+  const sentences = (text.match(sentenceRe) || [text]).map(s => s.trim()).filter(Boolean);
+
+  const fragments = [];
+  let buf = "";
+  const flush = () => { if (buf) { fragments.push(buf); buf = ""; } };
+
+  for (const s of sentences) {
+    if (s.length > maxChars) {
+      flush();
+      fragments.push(...wordSplit(s, maxChars));
+      continue;
+    }
+    const candidate = buf ? buf + ' ' + s : s;
+    if (candidate.length <= maxChars) {
+      buf = candidate;
+    } else {
+      flush();
+      buf = s;
+    }
+  }
+  flush();
+
+  let truncated = false;
+  if (fragments.length > maxFragments) {
+    truncated = true;
+    fragments.length = maxFragments;
+    const last = fragments[maxFragments - 1];
+    const ellipsis = " [...]";
+    if (last.length + ellipsis.length <= maxChars) {
+      fragments[maxFragments - 1] = last + ellipsis;
+    } else {
+      fragments[maxFragments - 1] = last.slice(0, maxChars - ellipsis.length).trimEnd() + ellipsis;
+    }
+  }
+
+  return { fragments: fragments.map(byteCap), truncated };
+}
+
+function wordSplit(s, maxChars) {
+  const out = [];
+  let buf = "";
+  for (const word of s.split(/\s+/)) {
+    if (word.length > maxChars) {
+      if (buf) { out.push(buf); buf = ""; }
+      for (let i = 0; i < word.length; i += maxChars) out.push(word.slice(i, i + maxChars));
+      continue;
+    }
+    const candidate = buf ? buf + ' ' + word : word;
+    if (candidate.length <= maxChars) buf = candidate;
+    else { out.push(buf); buf = word; }
+  }
+  if (buf) out.push(buf);
+  return out;
+}
+
+function byteCap(s) {
+  if (Buffer.byteLength(s, 'utf8') <= MC_PROTOCOL_BYTE_LIMIT) return s;
+  let cut = s;
+  while (Buffer.byteLength(cut, 'utf8') > MC_PROTOCOL_BYTE_LIMIT) cut = cut.slice(0, -1);
+  return cut;
+}
+
+async function sendToMcChat(text, { source = "auto" } = {}) {
+  const { fragments, truncated } = chunkForMc(text);
+  if (fragments.length === 0) {
+    return { ok: true, fragments_sent: 0, fragments_dropped: 0, reason: "empty" };
+  }
+
+  const now = Date.now();
+  recentFragments = recentFragments.filter(t => now - t < MC_THROTTLE_WINDOW_MS);
+  let dropped = truncated ? 1 : 0;
+  let sent = 0;
+
+  for (const frag of fragments) {
+    if (recentFragments.length >= MC_THROTTLE_WINDOW_MAX) {
+      log(`[chat] Throttle: dropping fragment (${recentFragments.length}/${MC_THROTTLE_WINDOW_MAX} in window)`);
+      dropped++;
+      continue;
+    }
+    try {
+      const b = ensureBot();
+      b.chat(frag);
+    } catch (e) {
+      log(`[chat] b.chat() threw: ${e.message}`);
+      dropped++;
+      continue;
+    }
+    recentFragments.push(now);
+    sent++;
+    chatLog.push({ time: Date.now(), from: botName, message: frag, self: true });
+    if (chatLog.length > MAX_LOG) chatLog.shift();
+    broadcastDashboard('chat', chatLog.slice(-30));
+    if (sent < fragments.length) await sleep(MC_FRAGMENT_DELAY_MS);
+  }
+
+  return { ok: true, fragments_sent: sent, fragments_dropped: dropped, truncated };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -2252,12 +2370,19 @@ async collect({ block, count = 1 }) {
     return { result: 'Closed screen.' };
   },
 
-  // ── Utility ──────────────────────────────────────
+  // ── Utility ───────────────────────────────────
   async chat({ message }) {
-    const b = ensureBot();
-    b.chat(message);
-    rememberSocialEvent({ actor: getMyName(), kind: 'sent', channel: 'public', message });
-    return { result: `Sent: ${message}` };
+    const result = await sendToMcChat(message, { source: "tool" });
+    rememberSocialEvent({
+      actor: getMyName(), kind: 'sent', channel: 'public',
+      message,
+      fragments: result.fragments_sent,
+    });
+    return {
+      result: result.fragments_sent === 0
+        ? `Message dropped (throttled or empty).`
+        : `Sent: ${result.fragments_sent} fragment(s)${result.truncated ? ' [truncated]' : ''}`,
+    };
   },
 
   async wait({ seconds = 5 }) {
@@ -3448,32 +3573,34 @@ const httpServer = http.createServer(async (req, res) => {
         const message = body?.message;
         const sender = body?.as;
         if (!message || typeof message !== 'string') {
-          return respond(res, 400, { ok: false, error: 'Missing or invalid "message" field' });
+          return respond(res, 400, { ok: false, error: "missing or invalid 'message'" });
         }
+        if (message.length > 10_000) {
+          return respond(res, 413, { ok: false, error: "message too large" });
+        }
+
         const b = ensureBot();
         const botName = b.username;
-        let chatFrom = botName;
 
         if (sender && typeof sender === 'string' && sender.toLowerCase() !== botName.toLowerCase()) {
           // Send as someone else via /say (Server) or /tellraw (custom name)
+          let chatFrom = botName;
           if (sender.toLowerCase() === 'server') {
             b.chat('/say ' + message);
             chatFrom = 'Server';
           } else {
-            // Use tellraw to simulate a named sender: "Name: message"
             const tellrawCmd = `/tellraw @a ["",{"text":"${sender}: ","color":"yellow","bold":true},{"text":"${message}"}]`;
             b.chat(tellrawCmd);
             chatFrom = sender;
           }
-        } else {
-          b.chat(message);
+          chatLog.push({ time: Date.now(), from: chatFrom, message, self: chatFrom.toLowerCase() === botName.toLowerCase() });
+          if (chatLog.length > MAX_LOG) chatLog.shift();
+          broadcastDashboard('chat', chatLog.slice(-30));
+          return respond(res, 200, { ok: true, result: 'Message sent.', from: chatFrom });
         }
 
-        // Also add to chatLog so it appears in read_chat history
-        chatLog.push({ time: Date.now(), from: chatFrom, message, self: chatFrom.toLowerCase() === botName.toLowerCase() });
-        if (chatLog.length > MAX_LOG) chatLog.shift();
-        broadcastDashboard('chat', chatLog.slice(-30));
-        return respond(res, 200, { ok: true, result: 'Message sent.', from: chatFrom });
+        const result = await sendToMcChat(message, { source: "http" });
+        return respond(res, 200, result);
       }
 
       // Save blueprint edits — POST /blueprints/:name
